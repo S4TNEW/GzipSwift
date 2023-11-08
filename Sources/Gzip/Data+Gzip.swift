@@ -42,7 +42,7 @@ public enum Gzip {
 
 
 /// Compression level whose rawValue is based on the zlib's constants.
-public struct CompressionLevel: RawRepresentable {
+public struct CompressionLevel: RawRepresentable, Sendable {
     
     /// Compression level in the range of `0` (no compression) to `9` (maximum compression).
     public let rawValue: Int32
@@ -68,10 +68,10 @@ public struct CompressionLevel: RawRepresentable {
 
 
 /// Errors on gzipping/gunzipping based on the zlib error codes.
-public struct GzipError: Swift.Error {
+public struct GzipError: Swift.Error, Sendable {
     // cf. http://www.zlib.net/manual.html
     
-    public enum Kind: Equatable {
+    public enum Kind: Equatable, Sendable {
         /// The stream structure was inconsistent.
         ///
         /// - underlying zlib error: `Z_STREAM_ERROR` (-2)
@@ -201,7 +201,7 @@ extension Data {
             
             self.withUnsafeBytes { (inputPointer: UnsafeRawBufferPointer) in
                 stream.next_in = UnsafeMutablePointer<Bytef>(mutating: inputPointer.bindMemory(to: Bytef.self).baseAddress!).advanced(by: Int(stream.total_in))
-                stream.avail_in = uint(inputCount) - uInt(stream.total_in)
+                stream.avail_in = uInt(inputCount) - uInt(stream.total_in)
                 
                 data.withUnsafeMutableBytes { (outputPointer: UnsafeMutableRawBufferPointer) in
                     stream.next_out = outputPointer.bindMemory(to: Bytef.self).baseAddress!.advanced(by: Int(stream.total_out))
@@ -277,7 +277,7 @@ extension Data {
                 self.withUnsafeBytes { (inputPointer: UnsafeRawBufferPointer) in
                     let inputStartPosition = totalIn + stream.total_in
                     stream.next_in = UnsafeMutablePointer<Bytef>(mutating: inputPointer.bindMemory(to: Bytef.self).baseAddress!).advanced(by: Int(inputStartPosition))
-                    stream.avail_in = uint(inputCount) - uInt(inputStartPosition)
+                    stream.avail_in = uInt(inputCount) - uInt(inputStartPosition)
                     
                     data.withUnsafeMutableBytes { (outputPointer: UnsafeMutableRawBufferPointer) in
                         let outputStartPosition = totalOut + stream.total_out
